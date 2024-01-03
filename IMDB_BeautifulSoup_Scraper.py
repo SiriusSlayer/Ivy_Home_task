@@ -2,20 +2,21 @@ import requests
 from bs4 import BeautifulSoup as bs
 
 imdb = "https://www.imdb.com"
-url = "/feature/genre"
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246"
 }
 
 
 def get_genres():
+    url = "/feature/genre"
     r = requests.get(url=imdb + url, headers=headers)
     soup = bs(r.content, "html.parser")
     r.close()
     #Using beautifulSoup to parse the Doc.
     first_div = soup.find("div", attrs={"class": "ipc-chip-list__scroller"})
     genres_tags = first_div.find_next("div", attrs={"class": "ipc-chip-list__scroller"})
-    #The genre tags are stored in the second div
+    
+    #The genre tags for movies is stored in the second div
     genre_list = genres_tags.select(
         "span"
     )  
@@ -26,9 +27,11 @@ def get_genres():
     # gives the list of a - tags present in the html code(The a tags contain the link of the genre)
 
     # formating the results to get the results in str and zipping it, for further use.
+    
     genre_list = [genre.text for genre in genre_list]
     genre_link = [imdb + web_link["href"] for web_link in web_links]
     genre = zip(genre_list, genre_link)
+    
     return genre
 
 
@@ -41,12 +44,17 @@ def get_movies(genre_link):
     movies_ul = soup.find("ul", attrs={"role": "presentation"})
     if movies_ul ==None:
         return {}
+    #h3 tags contain the names of the movies
     movies_list = movies_ul.select("h3")
+    
     n=min(20,len(movies_list))
+    #formatting the list to get the names
     _movie_list = [movies_list[i].text.split()[1:] for i in range(0, n)]
     actual_movie_list = [" ".join(_movie_list[i]) for i in range(0, n)]
     
+    # 'a' tags contain the link to the movies and there are two a tags for each movie in the html code.
     movie_links = movies_ul.select("a")
+    # formatting the list to get the links to the movies
     _movie_links = [(imdb + movie_links[i]["href"]).split("/") for i in range(0, 2*n, 2)]
     actual_movie_links = ["/".join(movie[: len(movie) - 1]) for movie in _movie_links]
     
@@ -54,7 +62,6 @@ def get_movies(genre_link):
     
     
     for i in range(n):
-        # print(i,actual_movie_links[i],actual_movie_list[i])
         movies[actual_movie_links[i]] = actual_movie_list[i]
     return movies
 
