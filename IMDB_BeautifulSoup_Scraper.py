@@ -102,7 +102,6 @@ def get_movie(movie_link):
     director_div = soup.find(
         "div", attrs={"class": "ipc-metadata-list-item__content-container"}
     )
-    # director_li = director_div.find("li")
 
     # Find all list items containing the directors' name
     directors_list = director_div.find_all("li")
